@@ -2,7 +2,7 @@
 //window.alert() - shows alert
 //console.log() - moves to websites console
 
-window.alert("Hi");
+document.write("Hi");
 function OnClick() {
    document.write("Ouch");
 }
