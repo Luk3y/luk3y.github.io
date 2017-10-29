@@ -14,10 +14,15 @@
 
 document.write("Hi");
 var clicks = 0
-
+var amount = 1
 function Lenny() {
-   clicks = clicks + 1
+   clicks = clicks + amount
    document.getElementById("text").innerHTML = clicks;
+}
+        
+function Kawaii() {
+  amount = Math.round(clicks/50) + amount
+  clicks = 0
 }
       </script>
       <br>
@@ -33,6 +38,8 @@ function Lenny() {
       <button onclick="Lenny()" onmouseover="Lenny()" onmouseout="Lenny()">( ͡° ͜ʖ ͡°)</button>
       <button onclick="Lenny()" onmouseover="Lenny()" onmouseout="Lenny()">( ͡° ͜ʖ ͡°)</button>
       <button onclick="Lenny()" onmouseover="Lenny()" onmouseout="Lenny()">( ͡° ͜ʖ ͡°)</button>
+      <br>
+      <p>          </p> <button onclick="Kawaii()">（´・ω・ `）</button>
       
       <p id="text"></p>
     </body>
