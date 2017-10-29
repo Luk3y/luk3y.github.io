@@ -14,7 +14,7 @@
 
 document.write("Hi");
 var clicks = 0
-var amount = 1
+var amount = 0
 var counter = 0
 
 function Lenny() {
@@ -23,7 +23,7 @@ function Lenny() {
 }
         
 function Kawaii() {
-  amount = Math.round(clicks) + amount
+  amount = Math.round(clicks / 100) + amount
   clicks = 0
   document.getElementById("clicks").innerHTML = clicks;
 }
@@ -32,7 +32,13 @@ function count() {
   counter = counter + 1
   document.getElementById("timerr").innerHTML = counter;
 }
+function increase() {
+  clicks = clicks + (amount / 1000)
+  document.getElementById("clicks").innerHTML = clicks;
+}
+        
 setInterval(function(){count()},1000)
+setInterval(function(){increase()},10)
       </script>
       <br>
       
