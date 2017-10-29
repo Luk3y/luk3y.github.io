@@ -3,7 +3,7 @@
   </head>
   <body>
     <p>Hi</p>
-    Last name: <input type="text" name="num" id="number"><br>
+    <input type="text" name="num" id="number"><br>
     <button onClick="input">Submit</button>
     
     <script>
