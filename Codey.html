@@ -15,16 +15,24 @@
 document.write("Hi");
 var clicks = 0
 var amount = 1
+var timer = 0
+
 function Lenny() {
    clicks = clicks + amount
-   document.getElementById("text").innerHTML = clicks;
+   document.getElementById("clicks").innerHTML = clicks;
 }
         
 function Kawaii() {
   amount = Math.round(clicks) + amount
   clicks = 0
-  document.getElementById("text").innerHTML = clicks;
+  document.getElementById("clicks").innerHTML = clicks;
 }
+        
+function timer() {
+  timer = timer + 1
+  document.getElementById("timer").innerHTML = timer;
+}
+setInterval(timer,1000);
       </script>
       <br>
       
@@ -42,6 +50,8 @@ function Kawaii() {
       <br>
       <p>          </p> <button onclick="Kawaii()">（´・ω・ `）</button>
       
-      <p id="text"></p>
+      <p id="clicks"></p>
+      <p> | </p>
+      <p id="timer"></p>
     </body>
   </html>
