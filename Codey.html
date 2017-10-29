@@ -15,13 +15,11 @@
 document.write("Hi");
 var clicks = 0
 var amount = 1
-var timer = 0
+var counter = 0
 
 function Lenny() {
    clicks = clicks + amount
    document.getElementById("clicks").innerHTML = clicks;
-  timer = timer + 1
-  document.getElementById("timerr").innerHTML = timer;
 }
         
 function Kawaii() {
@@ -30,9 +28,9 @@ function Kawaii() {
   document.getElementById("clicks").innerHTML = clicks;
 }
         
-function timer() {
-  timer = timer + 1
-  document.getElementById("timerr").innerHTML = timer;
+function count() {
+  counter = counter + 1
+  document.getElementById("timerr").innerHTML = counter;
 }
 //setInterval(function(){timer();},1000)
       </script>
@@ -48,7 +46,7 @@ function timer() {
       <br>
       <button onclick="Lenny()" onmouseover="Lenny()" onmouseout="Lenny()">( ͡° ͜ʖ ͡°)</button>
       <button onclick="Lenny()" onmouseover="Lenny()" onmouseout="Lenny()">( ͡° ͜ʖ ͡°)</button>
-      <button onclick="Lenny()" onmouseover="timer()" onmouseout="Lenny()">( ͡° ͜ʖ ͡°)</button>
+      <button onclick="Lenny()" onmouseover="count()" onmouseout="Lenny()">( ͡° ͜ʖ ͡°)</button>
       <br>
       <p>          </p> <button onclick="Kawaii()">（´・ω・ `）</button>
       
