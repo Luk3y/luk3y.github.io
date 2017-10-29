@@ -11,11 +11,14 @@
 //console.log() - moves to websites console
 
 document.write("Hi");
+var clicks = 0
 function OnClick() {
-   document.write("Ouch");
+   var clicks = clicks + 1
+   document.getElementById("text").innerHTML = clicks;
 }
       </script>
       <br>
       <button onclick="OnClick()">( ͡° ͜ʖ ͡°)</button>
+      <p id="text"></p>
     </body>
   </html>
