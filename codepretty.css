@@ -10,10 +10,25 @@ h1 {
   font-family: Arial;
   background-color: lightblue;
 }
-a {
+
+a:link,a:visited {
+  text-align: center;
+  border: 2px solid rgb(0, 255, 255);
+  border-radius: 8px;
+  font-family: Arial;
+  background-color: rgb(0, 255, 255);
+}
+a:hover {
   text-align: center;
   border: 2px solid black;
   border-radius: 8px;
   font-family: Arial;
   background-color: rgb(0, 255, 255);
+}
+a:active {
+  text-align: center;
+  border: 2px solid black;
+  border-radius: 8px;
+  font-family: Arial;
+  background-color: black;
 }
