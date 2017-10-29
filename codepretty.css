@@ -1,3 +1,7 @@
+body {
+  background-color: rgb(212, 233, 255);
+}
+
 h1 {
   padding: 25px;
   text-align: center;
@@ -11,5 +15,5 @@ a {
   border: 2px solid black;
   border-radius: 8px;
   font-family: Arial;
-  background-color: green;
+  background-color: rgb(0, 255, 255);
 }
