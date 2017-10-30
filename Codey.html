@@ -35,12 +35,12 @@ function count() {
   document.getElementById("timerr").innerHTML = counter;
 }
 function increase() {
-  clicks = clicks + (amount / 100)
+  clicks = clicks + (amount / 10)
   document.getElementById("clicks").innerHTML = clicks;
 }
         
 setInterval(function(){count()},1000)
-setInterval(function(){increase()},10)
+setInterval(function(){increase()},100)
       </script>
       <br>
       
