@@ -2,6 +2,10 @@ body {
   background-color: rgb(212, 233, 255);
 }
 
+p {
+  font-family: Arial;
+}
+
 h1 {
   padding: 25px;
   text-align: center;
