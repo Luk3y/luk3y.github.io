@@ -25,7 +25,7 @@ function Lenny() {
 }
         
 function Kawaii() {
-  amount = Math.round(clicks / 100) + amount
+  amount = Math.round(clicks / 10) + amount
   clicks = 0
   document.getElementById("clicks").innerHTML = clicks;
 }
@@ -35,7 +35,7 @@ function count() {
   document.getElementById("timerr").innerHTML = counter;
 }
 function increase() {
-  clicks = clicks + (amount / 10)
+  clicks = clicks + (amount / 100)
   document.getElementById("clicks").innerHTML = clicks;
 }
         
