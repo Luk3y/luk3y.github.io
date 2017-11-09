@@ -1,0 +1,276 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <title>Pew!</title>
+        <style>
+            #title {
+                font: arial, sans-serif;
+            }
+            body {
+                overflow: hidden;
+            }
+            #player {
+                background: #00ff00;
+                height: 20px;
+                width: 20px;
+                position: absolute;
+                z-index: 1000000;
+            }
+            .bullet {
+                background: #0000ff;
+                height: 5px;
+                width: 5px;
+                position: absolute;
+            }
+            .enemy {
+                background: absolute;
+                height: 40px;
+                width: 40px;
+                position: absolute;
+            }
+            .none {
+                background: #ffffff;
+                height: 0px;
+                width: 0px;
+                position: absolute;
+            }
+        </style>
+    </head>
+    <body>
+        <div id = "player"></div>
+        <script>
+        
+        //!
+        var bulletLife = 40;
+        //!
+        
+        var wKey = 87;
+        var aKey = 65;
+        var sKey = 83;
+        var dKey = 68;
+        
+        var upKey = 38;
+        var leftKey = 37;
+        var downKey = 40;
+        var rightKey = 39;
+        
+        var enemyCount = 0;
+        var bulletCount = 0;
+        
+        var player = createSprite('player',100,100,20,20);
+        //!
+        player.moveSpeed = 5;
+        //!
+        
+        var bullets = new Array();
+        var bullet = createSprite('bullet',-20,-20,5,5);
+        
+        var enemies = new Array();
+        
+        var lastUpdate = 0;
+        
+        var controller = new Object();
+        
+            function createSprite(element,x,y,w,h) {
+                var result = new Object();
+                result.element = element;
+                result.x = x;
+                result.y = y;
+                result.w = w;
+                result.h = h;
+                return result;
+            }
+            function setPosition(sprite) {
+            var e = document.getElementById(sprite.element);
+                e.style.left = sprite.x + "px";
+                e.style.top = sprite.y + "px";
+            }
+            function addBullet(keyCode) {
+                elementName = 'Bullet' + bulletCount;
+                var bullet = createSprite(elementName,-20,-20,5,5);
+                if(keyCode == upKey) {
+                    bullet.x = player.x + 8;
+                    bullet.y = player.y + 8;
+                    bullet.dir = 'up';
+                }
+                if(keyCode == leftKey) {
+                    bullet.x = player.x + 8;
+                    bullet.y = player.y + 8;
+                    bullet.dir = 'left';
+                }
+                if(keyCode == downKey) {
+                    bullet.x = player.x + 8;
+                    bullet.y = player.y + 8;
+                    bullet.dir = 'down';
+                }
+                if(keyCode == rightKey) {
+                    bullet.x = player.x + 8;
+                    bullet.y = player.y + 8;
+                    bullet.dir = 'right';
+                }
+                var element = document.createElement('div');
+                element.id = bullet.element;
+                element.className = 'bullet';
+                
+                document.children[0].appendChild(element);
+                bulletCount++;
+                
+                bullet.lifeTimer = 0;
+                bullets[bullets.length] = bullet;
+            }
+            function addEnemy() {
+                elementName = 'Enemy' + enemyCount;
+                var enemy = createSprite(elementName,Math.floor(Math.random() * 1340),Math.floor(Math.random() * 600),40,40);
+                
+                var element = document.createElement('div');
+                element.id = enemy.element;
+                element.className = 'enemy';
+                element.style.backgroundColor = 'rgb('+Math.floor(Math.random() * 255)+", 0, 0)";
+                document.children[0].appendChild(element);
+                enemy.number = enemyCount;
+                enemyCount++;
+                
+                enemies[enemies.length] = enemy;
+            }
+            function toggleKey(keyCode, isPressed) {
+                if(keyCode == wKey) {
+                    controller.w = isPressed;
+                }
+                if(keyCode == aKey) {
+                    controller.a = isPressed;
+                }
+                if(keyCode == sKey) {
+                    controller.s = isPressed;
+                }
+                if(keyCode == dKey) {
+                    controller.d = isPressed;
+                }
+            }
+            document.onkeydown = function(evt) {
+                toggleKey(evt.keyCode, true);
+                if(evt.keyCode == upKey) {
+                    addBullet(evt.keyCode);
+                }
+                if(evt.keyCode == leftKey) {
+                    addBullet(evt.keyCode);
+                }
+                if(evt.keyCode == downKey) {
+                    addBullet(evt.keyCode);
+                }
+                if(evt.keyCode == rightKey) {
+                    addBullet(evt.keyCode);
+                }
+            };
+            document.onkeyup = function(evt) {
+                toggleKey(evt.keyCode, false)
+            };
+            function handleControls() {
+                if(controller.w) {
+                    player.y -= player.moveSpeed;
+                }
+                if(controller.a) {
+                    player.x -= player.moveSpeed;
+                }
+                if(controller.s) {
+                    player.y += player.moveSpeed;
+                }
+                if(controller.d) {
+                    player.x += player.moveSpeed;
+                }
+            }
+            function bulletHandler() {
+                for(i = 0; i < bullets.length; i++) {
+                    if(bullets[i].dir == 'up') {
+                        bullets[i].y -= player.moveSpeed * 1.5;
+                        bullets[i].lifeTimer++;
+                        if(bullets[i].lifeTimer > bulletLife) {
+                            var element = document.getElementById(bullets[i].element);
+                            element.style.visibility = 'hidden';
+                            element.parentNode.removeChild(element);
+                            bullets.splice(i,1);
+                            i--;
+                            break;
+                        }
+                    }
+                    if(bullets[i].dir == 'right') {
+                        bullets[i].x += player.moveSpeed * 1.5;
+                    }
+                    if(bullets[i].dir == 'down') {
+                        bullets[i].y += player.moveSpeed * 1.5;
+                    }
+                    if(bullets[i].dir == 'left') {
+                        bullets[i].x -= player.moveSpeed * 1.5;
+                    }
+                }
+            }
+            function enemyHandler() {
+                enemies.forEach(enemyz => {
+                    if(enemyz.x - player.x < 0){
+                        enemyz.x += 3;
+                    }
+                    if(enemyz.x - player.x > 0){
+                        enemyz.x -= 3;
+                    }
+                    if(enemyz.y - player.y < 0){
+                        enemyz.y += 3;
+                    }
+                    if(enemyz.y - player.y > 0){
+                        enemyz.y -= 3;
+                    }
+                })
+            }
+            function checkCollision (a,b) {
+                return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
+            }
+            function checkEnemyHits() {
+                for(var iE = 0; iE < enemies.length; iE++) {
+                    for(var iB = 0; iB < bullets.length; iB++) {
+                        if(checkCollision(bullets[iB], enemies[iE])) {
+                            enemies.splice(iE,1);
+                            iE--;
+                        
+                            var element = document.getElementById(bullets[iB].element);
+                                element.style.visibility = 'hidden';
+                                element.parentNode.removeChild(element);
+                                bullets.splice(iB,1);
+                                iB--;
+                                break;
+                        }
+                    }
+                }
+            }
+            function showSprites() {
+                setPosition(player);
+                bullets.forEach(bullet => {
+                    setPosition(bullet)
+                })
+                enemies.forEach(enemy => {
+                    setPosition(enemy)
+                })
+                
+            }
+            function Update () {
+                if(new Date().getTime() - lastUpdate > 40) {
+                    handleControls();
+                    showSprites();
+                    bulletHandler();
+                    enemyHandler();
+                    checkEnemyHits();
+                    
+                    ECR++;
+                    if(ECR >= 10) {
+                        ECR = 0;
+                        addEnemy();
+                    }
+                    
+                    lastUpdate = new Date().getTime();
+                }
+                setTimeout('Update();', 2);
+            }
+        
+        var ECR = 0;
+        Update();
+                
+        </script>
+    </body>
+</html>
