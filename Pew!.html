@@ -60,6 +60,7 @@
         var player = createSprite('player',100,100,20,20);
         //!
         player.moveSpeed = 5;
+        var enemySpawnRate = 10;
         //!
         
         var bullets = new Array();
@@ -258,7 +259,7 @@
                     checkEnemyHits();
                     
                     ECR++;
-                    if(ECR >= 10) {
+                    if(ECR >= enemySpawnRate) {
                         ECR = 0;
                         addEnemy();
                     }
