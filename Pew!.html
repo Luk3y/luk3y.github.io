@@ -3,14 +3,14 @@
     <head>
         <title>Pew!</title>
         <style>
-            #title {
-                font: arial, sans-serif;
+            #hpBarE {
+                font-family: Arial;
             }
             body {
                 overflow: hidden;
             }
             #player {
-                background: #00ff00;
+                background: #00ffff;
                 height: 20px;
                 width: 20px;
                 position: absolute;
@@ -37,6 +37,7 @@
         </style>
     </head>
     <body>
+        <h3 id="hpBarE"></h3>
         <div id = "player"></div>
         <script>
         
@@ -60,7 +61,7 @@
         var player = createSprite('player',100,100,20,20);
         //!
         player.moveSpeed = 5;
-        var enemySpawnRate = 10;
+        player.hp = 100;
         //!
         
         var bullets = new Array();
@@ -126,7 +127,7 @@
                 var element = document.createElement('div');
                 element.id = enemy.element;
                 element.className = 'enemy';
-                element.style.backgroundColor = 'rgb('+Math.floor(Math.random() * 255)+", 0, 0)";
+                element.style.backgroundColor = 'rgb('+Math.floor(Math.random() * 255)+"," +Math.floor(Math.random() * 255)+", 0)";
                 document.children[0].appendChild(element);
                 enemy.number = enemyCount;
                 enemyCount++;
@@ -148,18 +149,20 @@
                 }
             }
             document.onkeydown = function(evt) {
-                toggleKey(evt.keyCode, true);
-                if(evt.keyCode == upKey) {
+                if(player.hp > 0) {
+                    toggleKey(evt.keyCode, true);
+                    if(evt.keyCode == upKey) {
                     addBullet(evt.keyCode);
-                }
-                if(evt.keyCode == leftKey) {
-                    addBullet(evt.keyCode);
-                }
-                if(evt.keyCode == downKey) {
-                    addBullet(evt.keyCode);
-                }
-                if(evt.keyCode == rightKey) {
-                    addBullet(evt.keyCode);
+                    }
+                    if(evt.keyCode == leftKey) {
+                        addBullet(evt.keyCode);
+                    }
+                    if(evt.keyCode == downKey) {
+                        addBullet(evt.keyCode);
+                    }
+                    if(evt.keyCode == rightKey) {
+                        addBullet(evt.keyCode);
+                    }
                 }
             };
             document.onkeyup = function(evt) {
@@ -193,14 +196,41 @@
                             break;
                         }
                     }
-                    if(bullets[i].dir == 'right') {
-                        bullets[i].x += player.moveSpeed * 1.5;
+                    if(bullets[i].dir == 'left') {
+                        bullets[i].x -= player.moveSpeed * 1.5;
+                        bullets[i].lifeTimer++;
+                        if(bullets[i].lifeTimer > bulletLife) {
+                            var element = document.getElementById(bullets[i].element);
+                            element.style.visibility = 'hidden';
+                            element.parentNode.removeChild(element);
+                            bullets.splice(i,1);
+                            i--;
+                            break;
+                        }
                     }
                     if(bullets[i].dir == 'down') {
                         bullets[i].y += player.moveSpeed * 1.5;
+                        bullets[i].lifeTimer++;
+                        if(bullets[i].lifeTimer > bulletLife) {
+                            var element = document.getElementById(bullets[i].element);
+                            element.style.visibility = 'hidden';
+                            element.parentNode.removeChild(element);
+                            bullets.splice(i,1);
+                            i--;
+                            break;
+                        }
                     }
-                    if(bullets[i].dir == 'left') {
-                        bullets[i].x -= player.moveSpeed * 1.5;
+                    if(bullets[i].dir == 'right') {
+                        bullets[i].x += player.moveSpeed * 1.5;
+                        bullets[i].lifeTimer++;
+                        if(bullets[i].lifeTimer > bulletLife) {
+                            var element = document.getElementById(bullets[i].element);
+                            element.style.visibility = 'hidden';
+                            element.parentNode.removeChild(element);
+                            bullets.splice(i,1);
+                            i--;
+                            break;
+                        }
                     }
                 }
             }
@@ -250,6 +280,17 @@
                 })
                 
             }
+            function checkHP() {
+                for(i = 0; i < enemies.length; i++) {
+                    if(checkCollision(player, enemies[i])) {
+                        if(player.hp > 0) {
+                            player.hp -= 1;
+                        }
+                    }
+                }
+                var hpBar = document.getElementById('hpBarE');
+                hpBar.innerHTML = "HP: " + player.hp;
+            }
             function Update () {
                 if(new Date().getTime() - lastUpdate > 40) {
                     handleControls();
@@ -257,9 +298,10 @@
                     bulletHandler();
                     enemyHandler();
                     checkEnemyHits();
+                    checkHP();
                     
                     ECR++;
-                    if(ECR >= enemySpawnRate) {
+                    if(ECR >= 10) {
                         ECR = 0;
                         addEnemy();
                     }
