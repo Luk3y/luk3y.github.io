@@ -5,6 +5,7 @@
         <style>
             #hpBarE {
                 font-family: Arial;
+                z-index: 1000002;
             }
             body {
                 overflow: hidden;
@@ -36,6 +37,26 @@
                 width: 0px;
                 position: absolute;
             }
+            .healthPack {
+                background: rgb(200,200,200);
+                height: 25px;
+                width: 25px;
+                position: absolute;
+                border: 2px solid black;
+                font-family: arial;
+                text-align: center;
+                z-index: 999999;
+            }
+            .flankShotUpgrade {
+                background: rgb(200,200,0);
+                height: 25px;
+                width: 25px;
+                position: absolute;
+                border: 2px solid black;
+                font-family: arial;
+                text-align: center;
+                z-index: 999999;
+            }
         </style>
     </head>
     <body>
@@ -45,7 +66,13 @@
         
         //!
         var bulletLife = 40;
+        var randoMove = 0;
+        var healthPackSpawnRate = 500;
+        var flankShotUpgradeSpawnRate = 500;
+        var enemyHealth = 5;
         //!
+        
+        var flankShotTimer = 100;
         
         var wKey = 87;
         var aKey = 65;
@@ -59,6 +86,8 @@
         
         var enemyCount = 0;
         var bulletCount = 0;
+        var healthPackCount = 0;
+        var flankShotUpgradeCount = 0;
         
         var player = createSprite('player',100,100,20,20);
         if(true) {
@@ -69,11 +98,16 @@
         player.moveSpeed = 5;
         player.hp = 100;
         //!
+        var hasFlankShotUpgrade = false;
         
         var bullets = new Array();
         var bullet = createSprite('bullet',-20,-20,5,5);
         
         var enemies = new Array();
+        var healthPacks = new Array();
+        addHealthPack();
+        
+        var flankShotUpgrades = new Array();
         
         var lastUpdate = 0;
         
@@ -89,9 +123,52 @@
                 return result;
             }
             function setPosition(sprite) {
+                if(sprite.x < 0) {
+                    sprite.x = 0;
+                }
+                if(sprite.x > 1340) {
+                    sprite.x = 1340;
+                }
+                if(sprite.y < 0) {
+                    sprite.y = 0;
+                }
+                if(sprite.y > 600) {
+                    sprite.y = 600;
+                }
+                
             var e = document.getElementById(sprite.element);
                 e.style.left = sprite.x + "px";
                 e.style.top = sprite.y + "px";
+            }
+            function addFlankShotUpgrade() {
+                elementName = 'flankShotUpgrade' + flankShotUpgradeCount;
+                var flankShotUpgrade = createSprite(elementName,Math.floor(Math.random() * 1340),Math.floor(Math.random() * 600),25,25);
+                
+                var element = document.createElement('h5');
+                element.id = flankShotUpgrade.element;
+                element.className = 'flankShotUpgrade';
+                element.innerHTML = 'FLK';
+                document.children[0].appendChild(element);
+                flankShotUpgrade.number = flankShotUpgradeCount;
+                flankShotUpgradeCount++;
+                
+                setPosition(flankShotUpgrade);
+                flankShotUpgrades[flankShotUpgrades.length] = flankShotUpgrade;
+            }
+            function addHealthPack() {
+                elementName = 'healthPack' + healthPackCount;
+                var healthPack = createSprite(elementName,Math.floor(Math.random() * 1340),Math.floor(Math.random() * 600),25,25);
+                
+                var element = document.createElement('div');
+                element.id = healthPack.element;
+                element.className = 'healthPack';
+                element.innerHTML = 'HP';
+                document.children[0].appendChild(element);
+                healthPack.number = healthPackCount;
+                healthPackCount++;
+                
+                setPosition(healthPack);
+                healthPacks[healthPacks.length] = healthPack;
             }
             function addBullet(keyCode) {
                 elementName = 'Bullet' + bulletCount;
@@ -137,6 +214,7 @@
                 element.style.border = '2px solid black';
                 document.children[0].appendChild(element);
                 enemy.number = enemyCount;
+                enemy.hp = enemyHealth;
                 enemyCount++;
                 
                 enemies[enemies.length] = enemy;
@@ -169,6 +247,20 @@
                     }
                     if(evt.keyCode == rightKey) {
                         addBullet(evt.keyCode);
+                    }
+                    if(hasFlankShotUpgrade == true) {
+                        if(evt.keyCode == upKey) {
+                        addBullet(downKey);
+                        }
+                        if(evt.keyCode == leftKey) {
+                        addBullet(rightKey);
+                        }
+                        if(evt.keyCode == downKey) {
+                        addBullet(upKey);
+                        }
+                        if(evt.keyCode == rightKey) {
+                            addBullet(leftKey);
+                        }
                     }
                 }
             };
@@ -255,6 +347,20 @@
                     if(enemyz.y - player.y + player.h / 2 > 0){
                         enemyz.y -= 3;
                     }
+                    var rando = Math.floor(Math.random() * 3)
+                    if(rando == 1) {
+                        enemyz.x += randoMove;
+                    }
+                    if(rando == 2) {
+                        enemyz.x -= randoMove;
+                    }
+                    var rando = Math.floor(Math.random() * 3)
+                    if(rando == 1) {
+                        enemyz.y += randoMove;
+                    }
+                    if(rando == 2) {
+                        enemyz.y -= randoMove;
+                    }
                 })
             }
             function checkCollision (a,b) {
@@ -264,18 +370,48 @@
                 for(var iE = 0; iE < enemies.length; iE++) {
                     for(var iB = 0; iB < bullets.length; iB++) {
                         if(checkCollision(bullets[iB], enemies[iE])) {
-                            var element = document.getElementById(enemies[iE].element);
-                                element.style.border = 'none';
-                            enemies.splice(iE,1);
-                            iE--;
-                        
                             var element = document.getElementById(bullets[iB].element);
                                 element.style.visibility = 'hidden';
                                 element.parentNode.removeChild(element);
                                 bullets.splice(iB,1);
                                 iB--;
+                                
+                            enemies[iE].hp--;
+                            if(enemies[iE].hp < 1) {
+                            var element = document.getElementById(enemies[iE].element);
+                                element.style.border = 'none';
+                            enemies.splice(iE,1);
+                            iE--;
+                            }
                                 break;
                         }
+                    }
+                }
+            }
+            function healthPackPickup() {
+                for(var i = 0; i < healthPacks.length; i++) {
+                        if(checkCollision(player, healthPacks[i])) {
+                            var element = document.getElementById(healthPacks[i].element);
+                                element.style.visibility = 'hidden';
+                                element.parentNode.removeChild(element);
+                                healthPacks.splice(i,1);
+                                player.hp += 10;
+                                i--;
+                                break;
+                    }
+                }
+            }
+            function flankShotUpgradePickup() {
+                for(var i = 0; i < flankShotUpgrades.length; i++) {
+                        if(checkCollision(player, flankShotUpgrades[i])) {
+                            flankShotUpgradeTimer = 100;
+                            var element = document.getElementById(flankShotUpgrades[i].element);
+                                element.style.visibility = 'hidden';
+                                element.parentNode.removeChild(element);
+                                flankShotUpgrades.splice(i,1);
+                                hasFlankShotUpgrade = true;
+                                i--;
+                                break;
                     }
                 }
             }
@@ -303,17 +439,37 @@
                 var hpBar = document.getElementById('hpBarE');
                 hpBar.innerHTML = "HP: " + player.hp;
             }
+            function PowerupHandler() {
+                var rando = Math.floor(Math.random() * healthPackSpawnRate);
+                    if(rando == 1){
+                        addHealthPack();
+                    }
+                    rando = Math.floor(Math.random() * flankShotUpgradeSpawnRate);
+                    if(rando == 1){
+                        addFlankShotUpgrade();
+                    }
+                    if(hasFlankShotUpgrade) {
+                        flankShotTimer--;
+                        if(flankShotTimer <= 0) {
+                            hasFlankShotUpgrade = false;
+                            flankShotTimer = 100
+                        }
+                    }
+            }
             function Update () {
                 if(new Date().getTime() - lastUpdate > 40) {
                     handleControls();
-                    showSprites();
                     bulletHandler();
                     enemyHandler();
                     checkEnemyHits();
                     checkHP();
+                    healthPackPickup();
+                    flankShotUpgradePickup();
+                    PowerupHandler();
+                    showSprites();
                     
                     ECR++;
-                    if(ECR >= 10) {
+                    if(ECR >= 25) {
                         ECR = 0;
                         addEnemy();
                     }
