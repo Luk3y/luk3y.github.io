@@ -7,10 +7,15 @@
                 height: 25px;
                 background: #00ffff;
                 position: absolute;
+                z-index: 1000000;
             }
             #hpBar {
                 font-family: arial;
                 color: absolute;
+            }
+            #scoreBar {
+                font-family: arial;
+                color: black;
             }
             .bullet {
                 width: 5px;
@@ -24,11 +29,18 @@
                 background: rgb(255,0,0);
                 position: absolute;
             }
+            .enemyCluster {
+                width: 30px;
+                height: 30px;
+                background: #ffff00;
+                position: absolute;
+            }
         </style>
     </head>
     <body>
         <div id="player"></div>
         <h3 id="hpBar">HP</h3>
+        <h3 id="scoreBar">HP</h3>
         
         <script>
         
@@ -36,21 +48,6 @@
         var aKey = 65;
         var sKey = 83;
         var dKey = 68;
-        
-        var lastUpdate = new Date().getTime();
-        
-        var player = createSprite('player',20,20,25,25);
-        //!
-        player.moveSpeed = 15;
-        player.hp = 100;
-        document.getElementById('hpBar').style.color = 'black';
-        //!
-        
-        var bullets = new Array();
-        var bulletCount = 0;
-        
-        var enemies = new Array();
-        var enemyCount = 0;
         
         var screenX = 0;
         var screenY = 0;
@@ -64,6 +61,22 @@
             screenX = x;
             screenY = y;
         }
+        
+        var lastUpdate = new Date().getTime();
+        
+        var player = createSprite('player',20,screenY / 2,25,25);
+        //!
+        player.moveSpeed = 15;
+        player.hp = 100;
+        document.getElementById('hpBar').style.color = 'black';
+        //!
+        var score = 0;
+        
+        var bullets = new Array();
+        var bulletCount = 0;
+        
+        var enemies = new Array();
+        var enemyCount = 0;
         
         var controller = new Object();
         var newBulletTimer = 0;
@@ -167,29 +180,40 @@
                     setPosition(enemy);
                 })
             }
-            function addEnemy(enemyType) {
-                var position = Math.floor(Math.random() * screenY);
+            function addEnemy(enemyType, position) {
                 var elementName = 'enemy' + enemyCount;
-                var enemy = createSprite(elementName, screenX, position, 50, 50);
+                var enemy = new Object();
                 
                 var element = document.createElement('div');
-                element.id = enemy.element;
-                element.className = 'enemyNormal';
-                document.children[0].appendChild(element);
                 
-                enemy.type = enemyType;
                 if(enemyType == 'normal') {
+                    enemy = createSprite(elementName, screenX, position, 50, 50);
                     enemy.hp = 2;
+                    element.className = 'enemyNormal';
                 }
+                if(enemyType == 'cluster') {
+                    enemy = createSprite(elementName, screenX, position, 30, 30);
+                    enemy.hp = 1;
+                    element.className = 'enemyCluster';
+                }
+                
+                element.id = enemy.element;
+                enemy.type = enemyType;
                 
                 enemyCount++;
                 enemies[enemies.length] = enemy;
+                document.children[0].appendChild(element);
             }
             function enemyHandler() {
                 for(i = 0; i < enemies.length; i++){
                     var isDelete = false;
                     if(enemies[i].type == 'normal') {
                         enemies[i].x -= 5
+                    }
+                    if(enemies[i].type == 'cluster') {
+                        enemies[i].x -= 4;
+                        enemies[i].y += Math.floor(Math.random() * 5);
+                        enemies[i].y -= Math.floor(Math.random() * 5);
                     }
                     if(enemies[i].x <= 0) {
                         element = document.getElementById(enemies[i].element);
@@ -199,7 +223,12 @@
                     }
                     if(checkCollision(enemies[i], player)) {
                         if(player.hp > 0) {
-                        player.hp -= 10;
+                            if(enemies[i].type == 'normal') {
+                                    player.hp -= 10;
+                                }
+                                if(enemies[i].type == 'cluster') {
+                                    player.hp -= 4;
+                                }
                             if(player.hp < 0) {
                                 player.hp = 0;
                             }
@@ -217,6 +246,12 @@
                             enemies[i].hp--;
                             if(enemies[i].hp < 1) {
                             isDelete = true;
+                                if(enemies[i].type == 'normal') {
+                                    score += 3;
+                                }
+                                if(enemies[i].type == 'cluster') {
+                                    score += 1;
+                                }
                             }
                         }
                     }
@@ -231,7 +266,14 @@
             }
             function enemyCreator() {
                 if(1 == Math.floor(Math.random() * 10)) {
-                    addEnemy('normal');
+                    var position = Math.floor(Math.random() * screenY);
+                    addEnemy('normal', position);
+                }
+                if(1 == Math.floor(Math.random() * 20)) {
+                    var position = Math.floor(Math.random() * screenY);
+                    addEnemy('cluster', position);
+                    addEnemy('cluster', position);
+                    addEnemy('cluster', position);
                 }
             }
             function Update () {
@@ -247,6 +289,7 @@
                     enemyHandler();
                     showSprites();
                     document.getElementById('hpBar').innerHTML = 'HP: ' + player.hp;
+                    document.getElementById('scoreBar').innerHTML = 'Score: ' + score;
                     
                     lastUpdate = new Date().getTime();
                 }
@@ -254,6 +297,7 @@
                 } else {
                     document.body.style.backgroundColor = 'black';
                     document.getElementById('hpBar').style.color = 'white';
+                    document.getElementById('scoreBar').style.color = 'white';
                     document.getElementById('player').style.backgroundColor = 'white';
                     enemies.forEach(enemy => {
                         document.getElementById(enemy.element).style.backgroundColor = 'rgb(100,100,100)';
