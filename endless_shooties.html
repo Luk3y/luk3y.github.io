@@ -26,13 +26,25 @@
             .enemyNormal {
                 width: 50px;
                 height: 50px;
-                background: rgb(255,0,0);
+                background: rgb(255, 170, 0);
                 position: absolute;
             }
             .enemyCluster {
                 width: 30px;
                 height: 30px;
                 background: #ffff00;
+                position: absolute;
+            }
+            .enemyBullet {
+                width: 5px;
+                height: 5px;
+                background: rgb(255,0,0);
+                position: absolute;
+            }
+            .enemyTripleShooter {
+                width: 40px;
+                height: 40px;
+                background: rgb(255,0,255);
                 position: absolute;
             }
         </style>
@@ -75,11 +87,16 @@
         var bullets = new Array();
         var bulletCount = 0;
         
+        var enemyBullets = new Array();
+        var enemyBulletCount = 0;
+        
         var enemies = new Array();
         var enemyCount = 0;
         
         var controller = new Object();
         var newBulletTimer = 0;
+        
+        var gameTime = 0;
         
         function checkCollision (a,b) {
                 return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
@@ -163,6 +180,21 @@
                 bullet.class = 'bullet';
                 bullets[bullets.length] = bullet;
             }
+            function addEnemyBullet(x,y,dir) {
+                elementName = 'enemyBullet' + enemyBulletCount;
+                var enemyBullet = createSprite(elementName,x,y,5,5);
+                
+                var element = document.createElement('div');
+                element.id = enemyBullet.element;
+                element.className = 'enemyBullet';
+                
+                document.children[0].appendChild(element);
+                enemyBulletCount++;
+                
+                enemyBullet.dir = dir;
+                enemyBullet.class = 'enemyBullet';
+                enemyBullets[enemyBullets.length] = enemyBullet;
+            }
             function showSprites() {
                 setPosition(player);
                 
@@ -188,13 +220,19 @@
                 
                 if(enemyType == 'normal') {
                     enemy = createSprite(elementName, screenX, position, 50, 50);
-                    enemy.hp = 2;
+                    enemy.hp = 4;
                     element.className = 'enemyNormal';
                 }
                 if(enemyType == 'cluster') {
                     enemy = createSprite(elementName, screenX, position, 30, 30);
                     enemy.hp = 1;
                     element.className = 'enemyCluster';
+                }
+                if(enemyType == 'tripleShooter') {
+                    enemy = createSprite(elementName, screenX, position, 40, 40);
+                    enemy.hp = 4;
+                    enemy.bulletTimer = 0;
+                    element.className = 'enemyTripleShooter';
                 }
                 
                 element.id = enemy.element;
@@ -208,18 +246,18 @@
                 for(i = 0; i < enemies.length; i++){
                     var isDelete = false;
                     if(enemies[i].type == 'normal') {
-                        enemies[i].x -= 5
+                        enemies[i].x -= 10
                     }
                     if(enemies[i].type == 'cluster') {
                         enemies[i].x -= 4;
                         enemies[i].y += Math.floor(Math.random() * 5);
                         enemies[i].y -= Math.floor(Math.random() * 5);
                     }
+                    if(enemies[i].type == 'tripleShooter') {
+                        enemies[i].x -= 4;
+                    }
                     if(enemies[i].x <= 0) {
-                        element = document.getElementById(enemies[i].element);
-                                element.style.visibility = 'hidden';
-                                element.parentNode.removeChild(element);
-                            enemies.splice(i,1);
+                        isDelete = true;
                     }
                     if(checkCollision(enemies[i], player)) {
                         if(player.hp > 0) {
@@ -228,6 +266,9 @@
                                 }
                                 if(enemies[i].type == 'cluster') {
                                     player.hp -= 4;
+                                }
+                                if(enemies[i].type == 'tripleShooter') {
+                                    player.hp -= 10;
                                 }
                             if(player.hp < 0) {
                                 player.hp = 0;
@@ -252,6 +293,9 @@
                                 if(enemies[i].type == 'cluster') {
                                     score += 1;
                                 }
+                                if(enemies[i].type == 'tripleShooter') {
+                                    score += 5;
+                                }
                             }
                         }
                     }
@@ -264,29 +308,91 @@
                     }
                 }
             }
+            //enemySpawnRates
             function enemyCreator() {
-                if(1 == Math.floor(Math.random() * 10)) {
+                if(1 == Math.floor(Math.random() * 20)) {
                     var position = Math.floor(Math.random() * screenY);
                     addEnemy('normal', position);
                 }
-                if(1 == Math.floor(Math.random() * 20)) {
-                    var position = Math.floor(Math.random() * screenY);
-                    addEnemy('cluster', position);
-                    addEnemy('cluster', position);
-                    addEnemy('cluster', position);
+                if(gameTime >= 250) {
+                    if(1 == Math.floor(Math.random() * 20)) {
+                        var position = Math.floor(Math.random() * screenY);
+                        addEnemy('cluster', position);
+                        addEnemy('cluster', position);
+                        addEnemy('cluster', position);
+                    }
+                }
+                if(gameTime >= 500) {
+                    if(1 == Math.floor(Math.random() * 40)) {
+                        var position = Math.floor(Math.random() * screenY);
+                        addEnemy('tripleShooter', position);
+                    }
                 }
             }
+            function enemyBulletHandler() {
+                var isDelete;
+                for(i = 0; i < enemies.length; i++) {
+                    if(enemies[i].type == 'tripleShooter') {
+                        enemies[i].bulletTimer++;
+                        if(enemies[i].bulletTimer >= 40) {
+                            enemies[i].bulletTimer = 0;
+                            addEnemyBullet(enemies[i].x, enemies[i].y + enemies[i].h / 2, 'topLeft');
+                            addEnemyBullet(enemies[i].x, enemies[i].y + enemies[i].h / 2, 'left');
+                            addEnemyBullet(enemies[i].x, enemies[i].y + enemies[i].h / 2, 'bottomLeft');
+                        }
+                    }
+                }
+                for(i = 0; i < enemyBullets.length; i++) {
+                    isDelete = false;
+                    if(enemyBullets[i].dir == 'topLeft') {
+                        enemyBullets[i].y -= 15;
+                        enemyBullets[i].x -= 15
+                    }
+                    if(enemyBullets[i].dir == 'left') {
+                        enemyBullets[i].x -= 15
+                    }
+                    if(enemyBullets[i].dir == 'bottomLeft') {
+                        enemyBullets[i].y += 15;
+                        enemyBullets[i].x -= 15
+                    }
+                    setPosition(enemyBullets[i]);
+                    if(checkCollision(enemyBullets[i], player)) {
+                        isDelete = true;
+                        player.hp -= 5;
+                    }
+                    if(enemyBullets[i].x === 0) {
+                        isDelete = true;
+                    }
+                    if(enemyBullets[i].y === 0) {
+                        isDelete = true;
+                    }
+                    if(enemyBullets[i].y + enemyBullets[i].h === screenY) {
+                        isDelete = true;
+                    }
+                    if(isDelete == true) {
+                        element = document.getElementById(enemyBullets[i].element);
+                                element.style.visibility = 'hidden';
+                                element.parentNode.removeChild(element);
+                        enemyBullets.splice(i,1);
+                        i--;
+                    }
+                }
+            }
+            
+            //Update
             function Update () {
-                if(player.hp != 0) {
+                if(player.hp > 0) {
                 if(new Date().getTime() - lastUpdate > 40) {
+                    gameTime++;
                     handleControls();
                     newBulletTimer--;
                     if(newBulletTimer <= 0) {
-                        newBulletTimer = 3;
+                        newBulletTimer = 2;
                         addBullet();
                     }
                     enemyCreator();
                     enemyHandler();
+                    enemyBulletHandler();
                     showSprites();
                     document.getElementById('hpBar').innerHTML = 'HP: ' + player.hp;
                     document.getElementById('scoreBar').innerHTML = 'Score: ' + score;
@@ -304,6 +410,9 @@
                     })
                     bullets.forEach(bullet => {
                         document.getElementById(bullet.element).style.backgroundColor = 'rgb(150,150,150)';
+                    })
+                    enemyBullets.forEach(enemyBullet => {
+                        document.getElementById(enemyBullet.element).style.backgroundColor = 'rgb(150,150,150)';
                     })
                 }
             }
