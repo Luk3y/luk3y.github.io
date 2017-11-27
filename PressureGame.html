@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Wind</title>
+        <style>
+            body {
+                background-image: url("backround1.gif");
+                background-repeat: repeat, repeat;
+                overflow: hidden;
+            }
+            #player {
+                width: 50px;
+                height: 50px;
+                background: #00ffff;
+                position: absolute;
+                z-index: 1000000;
+                font-family: arial;
+                text-align: center;
+            }
+            .lowPressure {
+                width: 25px;
+                height: 25px;
+                background: #ff0000;
+                position: absolute;
+                z-index: 1;
+                font-family: arial;
+            }
+            .text {
+                font-family: arial;
+                z-index: 1000001;
+            }
+            #lesson {
+                font-family: arial;
+                visibility: hidden;
+            }
+        </style>
+    </head>
+    <body>
+        <h2 id="score">Score</h2>
+        <h3 id="lesson">In the game, you go to places with more low pressure to get more score <br> In real life, segments of air with high pressure go to the areas with a lot of low pressure</h3>
+        
+        <h6 id="player">High Pressure</h6>
+        <script>
+        
+        var wKey = 87;
+        var aKey = 65;
+        var sKey = 83;
+        var dKey = 68;
+        
+        var controller = new Object();
+        
+            var screenX = 0;
+            var screenY = 0;
+            if(true) {
+                var w = window;
+                d = document;
+                e = d.documentElement;
+                g = d.getElementsByTagName('body')[0];
+                x = w.innerWidth || e.clientWidth || g.clientWidth;
+                y = w.innerHeight|| e.clientHeight|| g.clientHeight;
+                screenX = x;
+                screenY = y;
+            }
+            
+            var lastUpdate = new Date().getTime();
+        
+        var player = createSprite('player',20,screenY / 2,50,50);
+        //!
+        player.moveSpeed = 15;
+        //!
+        var score = 0;
+        
+        var lowPressures = new Array();
+        var lowPressureCount = 0;
+        
+        
+        
+        
+        function checkCollision (a,b) {
+                return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
+            }
+            function createSprite(element,x,y,w,h) {
+                var result = new Object();
+                result.element = element;
+                result.x = x;
+                result.y = y;
+                result.w = w;
+                result.h = h;
+                return result;
+            }
+        function setPosition(sprite) {
+                
+                if(sprite.x < 0) {
+                    sprite.x = 0;
+                }
+                if(sprite.y < 120) {
+                    sprite.y = 120;
+                }
+                if(sprite.x > screenX - sprite.w) {
+                    sprite.x = screenX - sprite.w;
+                }
+                if(sprite.y > screenY - sprite.h) {
+                    sprite.y = screenY - sprite.h;
+                }
+                
+            var e = document.getElementById(sprite.element);
+                e.style.left = sprite.x + "px";
+                e.style.top = sprite.y + "px";
+            }
+            document.onkeydown = function(evt) {
+                toggleKey(evt.keyCode, true)
+            };
+            document.onkeyup = function(evt) {
+                toggleKey(evt.keyCode, false)
+            };
+            function toggleKey(keyCode, isPressed) {
+                if(keyCode == wKey) {
+                    controller.w = isPressed;
+                }
+                if(keyCode == aKey) {
+                    controller.a = isPressed;
+                }
+                if(keyCode == sKey) {
+                    controller.s = isPressed;
+                }
+                if(keyCode == dKey) {
+                    controller.d = isPressed;
+                }
+            }
+            function handleControls() {
+                if(controller.w) {
+                    player.y -= player.moveSpeed;
+                }
+                if(controller.a) {
+                    player.x -= player.moveSpeed;
+                }
+                if(controller.s) {
+                    player.y += player.moveSpeed;
+                }
+                if(controller.d) {
+                    player.x += player.moveSpeed;
+                }
+            }
+            function addLowPressure() {
+                var randX = Math.floor(Math.random() * screenX);
+                var randY = Math.floor(Math.random() * (screenY - 120)) + 120;
+                var elementName = 'lowPressure' + lowPressureCount;
+                var lowPressure = createSprite(elementName,randX,randY,25,25);
+                var element = document.createElement('h6');
+                element.className = 'lowPressure';
+                element.id = lowPressure.element
+                element.innerHTML = 'Low';
+                document.children[0].appendChild(element);
+                
+                lowPressures.push(lowPressure);
+                lowPressureCount++;
+            }
+            function pressureCombination() {
+                for(i = 0; i < lowPressures.length; i++) {
+                    if(checkCollision(player, lowPressures[i])) {
+                        score++;
+                        var element = document.getElementById(lowPressures[i].element);
+                        console.log(element);
+                        element.style.visibility = 'hidden';
+                        element.parentNode.removeChild(element);
+                        
+                        lowPressures.splice(i, 1);
+                        i--;
+                    }
+                }
+            }
+            //Update
+            function Update () {
+                if(new Date().getTime() - lastUpdate > 40) {
+                    handleControls();
+                    setPosition(player);
+                    addLowPressure();
+                    addLowPressure();
+                    addLowPressure();
+                    lowPressures.forEach(lowPressure => {
+                        setPosition(lowPressure);
+                    })
+                    pressureCombination();
+                    document.getElementById('score').innerHTML = 'Score: ' + score;
+                    if(score >= 500) {
+                        document.getElementById('lesson').style.visibility = 'visible';
+                    }
+                    
+                    lastUpdate = new Date().getTime();
+                }
+                setTimeout('Update();', 2);
+            }
+            
+            Update();
+        </script>
+    </body>
+</html>
