@@ -1,0 +1,375 @@
+<html>
+    <head>
+        <title>Spanish Game</title>
+        <style>
+            p {
+                font-family: arial;
+                color: white;
+                position: absolute;
+            }
+            div {
+                font-family: arial;
+                color: white;
+                position: absolute;
+            }
+            #background {
+                width: 800px;
+                height: 400px;
+                background: black;
+                position: absolute;
+            }
+            #coins {
+                z-index: 1000001;
+            }
+            #player {
+                width: 25px;
+                height: 25px;
+                background: rgb(0, 100, 100);
+                position: absolute;
+                z-index: 1000000;
+            }
+            #playerText {
+                width: 100px;
+                font-size: 15px;
+            }
+            .bullet {
+                width: 5px;
+                height: 5px;
+                background: rgb(0, 255, 0);
+                position: absolute;
+                z-index: 1000000;
+                font-size: 10px;
+            }
+            .enemy {
+                width: 60px;
+                height: 60px;
+                background: rgb(255, 0, 0);
+                position: absolute;
+                z-index: 10;
+                font-size: 15px;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="background"></div>
+        <div id="bulletContainer"></div>
+        <div id="enemyContainer"></div>
+        <div id="player">
+            <div id="playerText" style="top: 0px;"></div>
+        </div>
+        <p id="coins">Coins: 0</p>
+        <script>
+        
+        var wKey = 87;
+        var aKey = 65;
+        var sKey = 83;
+        var dKey = 68;
+        var spaceKey = 32;
+        
+        var n1Key = 49;
+        var n2Key = 50;
+        var n3Key = 51;
+        var n4Key = 52;
+        var n5Key = 53;
+        var n6Key = 54;
+        var n7Key = 55;
+        var n8Key = 56;
+        var n9Key = 57;
+        var n0Key = 48;
+        
+        var controller = new Object();
+        
+        var itemCount = 0;
+        
+        var bullets = new Array();
+        var enemies = new Array();
+        
+            var screenX = 0;
+            var screenY = 0;
+            if(true) {
+                var w = window;
+                d = document;
+                e = d.documentElement;
+                g = d.getElementsByTagName('body')[0];
+                x = w.innerWidth || e.clientWidth || g.clientWidth;
+                y = w.innerHeight|| e.clientHeight|| g.clientHeight;
+                screenX = x;
+                screenY = y;
+            }
+            
+        var lastUpdate = new Date().getTime();
+         
+        var player = createSprite('player',20,200,25,25);
+        player.answer = 0;
+        chooseNewAnswer();
+        //!
+        player.moveSpeed = 15;
+        //!
+        var coins = 10;
+        
+        
+        
+        
+            function checkCollision (a,b) {
+                return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
+            }
+            function createSprite(element,x,y,w,h) {
+                var result = new Object();
+                result.element = element;
+                result.x = x;
+                result.y = y;
+                result.w = w;
+                result.h = h;
+                return result;
+            }
+            function setPosition(sprite) {
+                
+                if(sprite.x < 0) {
+                    sprite.x = 0;
+                }
+                if(sprite.y < 15) {
+                    sprite.y = 15;
+                }
+                if(sprite.x > 800 - sprite.w) {
+                    sprite.x = 800 - sprite.w;
+                }
+                if(sprite.y > 400 - sprite.h) {
+                    sprite.y = 400 - sprite.h;
+                }
+                
+            var e = document.getElementById(sprite.element);
+                e.style.left = sprite.x + "px";
+                e.style.top = sprite.y + "px";
+            }
+            document.onkeydown = function(evt) {
+                toggleKey(evt.keyCode, true)
+                
+                if(evt.keyCode == spaceKey) {
+                    if(coins > 0) {
+                        coins--;
+                        createBullet();
+                        chooseNewAnswer();
+                    }
+                }
+                
+                if(evt.keyCode == n1Key) {player.answer = 0; chooseNewAnswer();}
+                if(evt.keyCode == n2Key) {player.answer = 1; chooseNewAnswer();}
+                if(evt.keyCode == n3Key) {player.answer = 2; chooseNewAnswer();}
+                if(evt.keyCode == n4Key) {player.answer = 3; chooseNewAnswer();}
+                if(evt.keyCode == n5Key) {player.answer = 4; chooseNewAnswer();}
+            };
+            document.onkeyup = function(evt) {
+                toggleKey(evt.keyCode, false)
+            };
+            function toggleKey(keyCode, isPressed) {
+                if(keyCode == wKey) {
+                    controller.w = isPressed;
+                }
+                if(keyCode == sKey) {
+                    controller.s = isPressed;
+                }
+            }
+            function handleControls() {
+                if(controller.w) {
+                    player.y -= player.moveSpeed;
+                }
+                if(controller.s) {
+                    player.y += player.moveSpeed;
+                }
+            }
+            function createBullet() {
+                itemCount++;
+                var bullet = createSprite("bullet" + itemCount, player.x + player.w, player.y + player.h / 2 - 11, 5, 5);
+                
+                var element = document.createElement("div");
+                element.id = bullet.element;
+                element.style.left = bullet.x;
+                element.style.top = bullet.y
+                element.className = "bullet";
+                element.innerHTML = player.word;
+                
+                bullet.answer = player.answer;
+                bullets[bullets.length] = bullet;
+                document.getElementById("bulletContainer").appendChild(element);
+            }
+            function handleBullets() {
+                for(i = 0; i < bullets.length; i++) {
+                    bullets[i].x += 15;
+                    
+                    setPosition(bullets[i]);
+                    
+                    if(bullets[i].x >= 800 - bullets[i].w) {
+                        var element = document.getElementById(bullets[i].element);
+                        element.style.display = "hidden";
+                        document.getElementById("bulletContainer").removeChild(element);
+                        
+                        bullets.splice(i,1);
+                        i--;
+                    }
+                }
+            }
+            function createEnemy() {
+                itemCount++;
+                var enemy = createSprite("enemy" + itemCount, 775, Math.floor(Math.random() * 340), 60, 60);
+                switch(Math.floor(Math.random() * 5)) {
+                    case 0:
+                        enemy.word = "Como estas?";
+                        enemy.question = 0;
+                        break;
+                    case 1:
+                        enemy.word = "Que te clases tienes?";
+                        enemy.question = 1;
+                        break;
+                    case 2:
+                        enemy.word = "Caundo comes desayuno?";
+                        enemy.question = 2;
+                        break;
+                    case 3:
+                        enemy.word = "Cómo eres?";
+                        enemy.question = 3;
+                        break;
+                    case 4:
+                        enemy.word = "Que haces despues de las clases?";
+                        enemy.question = 4;
+                        break;
+                }
+                
+                var element = document.createElement("div");
+                element.id = enemy.element;
+                element.style.left = enemy.x;
+                element.style.top = enemy.y
+                element.className = "enemy";
+                element.innerHTML = enemy.word;
+                
+                enemies[enemies.length] = enemy;
+                document.getElementById("enemyContainer").appendChild(element);
+            }
+            function handleEnemies() {
+                for(i = 0; i < enemies.length; i++) {
+                    var deleteEnemy = false;
+                    enemies[i].x -= 5;
+                    
+                    setPosition(enemies[i]);
+                    if(enemies[i].x <= 0) {
+                        deleteEnemy = true;
+                        coins -= 5;
+                    }
+                    
+                    for(j = 0; j < bullets.length; j++) {
+                        if(checkCollision(bullets[j], enemies[i])) {
+                            if(bullets[j].answer == enemies[i].question) {
+                                deleteEnemy = true;
+                                
+                                coins += 2;
+                                
+                                var element = document.getElementById(bullets[j].element);
+                                element.style.display = "hidden";
+                                document.getElementById("bulletContainer").removeChild(element);
+                                
+                                bullets.splice(j,1);
+                                j--;
+                            }
+                        }
+                    }
+                    
+                    if(deleteEnemy == true) {
+                        var element = document.getElementById(enemies[i].element);
+                        element.style.display = "hidden";
+                        document.getElementById("enemyContainer").removeChild(element);
+                        
+                        enemies.splice(i,1);
+                        i--;
+                    }
+                }
+            }
+            //Update
+            function Update() {
+                if(new Date().getTime() - lastUpdate > 40) {
+                    handleControls();
+                    handleBullets();
+                    setPosition(player);
+                    document.getElementById("playerText").innerHTML = player.word;
+                    document.getElementById("coins").innerHTML = "Coins: " + coins;
+                    
+                    if(Math.floor(Math.random() * 50) == 1) {
+                        createEnemy();
+                    }
+                    handleEnemies();
+                    
+                    lastUpdate = new Date().getTime();
+                }
+                setTimeout('Update();', 2);
+            }
+            
+            Update();
+            
+            function chooseNewAnswer() {
+                if(player.answer == 0) {
+                switch(Math.floor(Math.random() * 3)) {
+                    case 0:
+                        player.word = "Soy bien";
+                        break;
+                    case 1:
+                        player.word = "Soy mal";
+                        break;
+                    case 2:
+                        player.word = "Soy mas o menos";
+                        break;
+                }
+                }
+                if(player.answer == 1) {
+                switch(Math.floor(Math.random() * 3)) {
+                    case 0:
+                        player.word = "Yo tengo la clase de espanol";
+                        break;
+                    case 1:
+                        player.word = "Yo tengo la clase de ciencias";
+                        break;
+                    case 2:
+                        player.word = "Yo tengo la clase de matematicas";
+                        break;
+                }
+                }
+                if(player.answer == 2) {
+                switch(Math.floor(Math.random() * 2)) {
+                    case 0:
+                        player.word = "Yo como desayuno a las seis";
+                        break;
+                    case 1:
+                        player.word = "Como desayuno a las siete y cuarto";
+                        break;
+                    case 1:
+                        player.word = "Yo como desayuno a las nueve y media";
+                        break;
+                }
+                }
+                if(player.answer == 3) {
+                switch(Math.floor(Math.random() * 2)) {
+                    case 0:
+                        player.word = "Soy intellegente";
+                        break;
+                    case 1:
+                        player.word = "Soy no atletico";
+                        break;
+                    case 1:
+                        player.word = "Yo tengo pelo castaño";
+                        break;
+                }
+                }
+                if(player.answer == 4) {
+                switch(Math.floor(Math.random() * 2)) {
+                    case 0:
+                        player.word = "Yo juego videojuegos";
+                        break;
+                    case 1:
+                        player.word = "Juego deportes";
+                        break;
+                    case 1:
+                        player.word = "Yo miro television";
+                        break;
+                }
+                }
+            }
+        </script>
+    </body>
+</html>
